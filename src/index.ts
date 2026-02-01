@@ -8,13 +8,20 @@ import { listTestPlansTool, handleListTestPlans } from "./tools/list-test-plans.
 import { listTestRunsTool, handleListTestRuns } from "./tools/list-test-runs.js";
 import { getTestRunTool, handleGetTestRun } from "./tools/get-test-run.js";
 import { generateTestPlanTool, handleGenerateTestPlan } from "./tools/generate-test-plan.js";
+import { runTestPlanTool, handleRunTestPlan } from "./tools/run-test-plan.js";
 
 const server = new Server(
   { name: "qa-agent", version: "1.0.0" },
   { capabilities: { tools: {} } }
 );
 
-const tools = [listTestPlansTool, listTestRunsTool, getTestRunTool, generateTestPlanTool];
+const tools = [
+  listTestPlansTool,
+  listTestRunsTool,
+  getTestRunTool,
+  generateTestPlanTool,
+  runTestPlanTool,
+];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 
@@ -30,6 +37,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return { content: [{ type: "text", text: JSON.stringify(await handleGetTestRun(args as any)) }] };
     case "generate_test_plan":
       return { content: [{ type: "text", text: JSON.stringify(await handleGenerateTestPlan(args as any)) }] };
+    case "run_test_plan":
+      return { content: [{ type: "text", text: JSON.stringify(await handleRunTestPlan(args as any)) }] };
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
