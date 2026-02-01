@@ -1,0 +1,45 @@
+% Role
+You are implementing the agentic assertion executor for the QA Agent MCP server. This executor handles LLM-based validation using Bedrock as a judge to evaluate assertions with confidence scoring and reasoning.
+
+% Requirements
+1. Implement executeAgenticAssertion(step: AgenticAssertionStep, context: ExecutionContext): Promise<StepResult>
+2. Scrape current page content using rtrvr client
+3. Call Bedrock client evaluateAssertion with:
+   - instruction: The assertion instruction from step
+   - criteria: The success criteria from step
+   - pageContent: The scraped page content
+4. Parse LLM response for pass/fail determination
+5. Extract confidence score (0-1) from LLM response
+6. Extract reasoning explanation from LLM response
+7. Return StepResult with:
+   - status: 'passed' if LLM determines success, 'failed' otherwise
+   - llmReasoning: The explanation from LLM
+   - confidence: The confidence score
+   - duration: Time for scrape + LLM evaluation
+8. Set minimum confidence threshold (0.7) for pass
+9. Capture screenshot for evidence
+10. Handle LLM errors gracefully with EXECUTION_FAILED
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for AgenticAssertionStep, StepResult, ExecutionContext</include>
+<include src="src/services/bedrock-client.ts">Bedrock client for LLM evaluation</include>
+<include src="src/services/rtrvr-client.ts">rtrvr.ai client for page scraping</include>
+
+% Instructions
+- First scrape page to get current state
+- Then call Bedrock to evaluate the assertion
+- Use bedrock client's evaluateAssertion function
+- Map LLM's passed boolean to StepResult status
+- Store confidence and reasoning in StepResult
+- Apply confidence threshold: fail if confidence < 0.7 even if LLM says passed
+- Include instruction and criteria in error messages for debugging
+- Log evaluation details to stderr
+
+% Deliverable
+A TypeScript module at src/executor/agentic-assertion.ts exporting the executeAgenticAssertion function.
+
+% Implementation Assumptions
+- Bedrock client returns AssertionResult with passed, confidence, reasoning
+- Page content is text extracted from HTML (not raw HTML)
+- Confidence scores are normalized to 0-1 range
+- LLM reasoning provides human-readable explanation

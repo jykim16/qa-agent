@@ -1,0 +1,43 @@
+% Role
+You are implementing the file-based storage service for the QA Agent MCP server. This service handles CRUD operations for test plans and test runs, persisting data to JSON files in the .qa-agent/ directory using lowdb.
+
+% Requirements
+1. Initialize storage directory at .qa-agent/ in the current working directory
+2. Create separate JSON files: plans.json and runs.json
+3. Implement savePlan(plan: TestPlan): Promise<string> - saves plan, returns plan ID
+4. Implement getPlan(planId: string): Promise<TestPlan | null> - retrieves plan by ID
+5. Implement listPlans(project?: string): Promise<TestPlanSummary[]> - lists plans with optional project filter
+6. Implement saveRun(run: TestRun): Promise<string> - saves test run, returns run ID
+7. Implement getRun(runId: string): Promise<TestRun | null> - retrieves run by ID
+8. Implement listRuns(filters?: RunFilters): Promise<TestRunSummary[]> - lists runs with optional filters (planId, status)
+9. Generate unique IDs using crypto.randomUUID()
+10. Handle file system errors gracefully, throwing STORAGE_ERROR
+11. Ensure atomic writes to prevent data corruption
+12. Create storage directory if it doesn't exist on initialization
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for TestPlan, TestRun, and error types</include>
+
+% Context URLs
+<web url="https://github.com/typicode/lowdb">lowdb v7 for JSON file storage</web>
+<web url="https://nodejs.org/api/fs.html#promises-api">Node.js fs/promises for file operations</web>
+
+% Instructions
+- Use lowdb v7 with JSONFilePreset for file-based storage
+- Initialize storage lazily on first access
+- Use mutex or write queue to prevent concurrent write conflicts
+- Implement TestPlanSummary as a subset of TestPlan (id, name, project, createdAt)
+- Implement TestRunSummary as a subset of TestRun (id, planId, status, startedAt, completedAt)
+- Implement RunFilters interface with optional planId and status fields
+- Wrap all file operations in try-catch and convert to QAAgentError
+- Use async/await for all file operations
+- Store timestamps as ISO 8601 strings
+
+% Deliverable
+A TypeScript module at src/services/storage.ts exporting storage functions for managing test plans and runs persistence.
+
+% Implementation Assumptions
+- lowdb v7 is installed as a dependency
+- Storage directory can be created with read/write permissions
+- Files are stored relative to process.cwd()
+- JSON files should be human-readable (pretty-printed)

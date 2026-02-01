@@ -1,0 +1,47 @@
+% Role
+You are implementing the main entry point for the QA Agent MCP server. This module creates the MCP server instance, registers tools, configures stdio transport, and starts the server.
+
+% Requirements
+1. Import MCP SDK components: Server, StdioServerTransport
+2. Import getAllTools from tools index
+3. Create MCP Server instance with:
+   - name: "qa-agent"
+   - version: from package.json or "1.0.0"
+4. Register all tools from getAllTools()
+5. Configure stdio transport for communication
+6. Implement main() async function that:
+   - Initializes the server
+   - Registers tool handlers
+   - Connects stdio transport
+   - Starts listening for requests
+7. Log all output to stderr (stdout reserved for MCP JSON-RPC)
+8. Handle uncaught errors gracefully
+9. Implement graceful shutdown on SIGINT/SIGTERM
+10. Export main function and call it
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions</include>
+<include src="src/tools/index.ts">Tool registration</include>
+
+% Context URLs
+<web url="https://modelcontextprotocol.io/docs/tools/creating-servers">MCP server creation guide</web>
+<web url="https://github.com/modelcontextprotocol/typescript-sdk">MCP TypeScript SDK reference</web>
+<web url="https://modelcontextprotocol.io/docs/tools/debugging">MCP server debugging with stdio transport</web>
+
+% Instructions
+- Use @modelcontextprotocol/sdk package
+- All console.log/console.error must go to stderr
+- Use console.error for logging, never console.log
+- Set up tool list handler to return tool schemas
+- Set up tool call handler to route to appropriate tool
+- Handle JSON-RPC errors according to spec
+- Add startup banner to stderr with server info
+
+% Deliverable
+A TypeScript module at src/index.ts that serves as the main entry point for the MCP server.
+
+% Implementation Assumptions
+- MCP SDK provides Server and StdioServerTransport classes
+- Server uses stdio for communication (stdin/stdout)
+- All non-MCP output goes to stderr
+- Process exits cleanly on shutdown signals

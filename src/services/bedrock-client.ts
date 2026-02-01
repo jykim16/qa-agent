@@ -3,6 +3,8 @@ import {
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
 import type { TestStep } from "../types/test-plan.js";
+import { debug } from "../logger.js";
+import { TEST_PLAN_GENERATION, ASSERTION_EVALUATION } from "../prompts/index.js";
 
 const client = new BedrockRuntimeClient({
   region: process.env.AWS_REGION || "us-east-1",
@@ -14,17 +16,13 @@ export async function generateTestPlan(
   prompt: string,
   context?: string
 ): Promise<TestStep[]> {
-  const systemPrompt = `You are a QA engineer generating test steps. Output valid JSON array of test steps.
-Each step must have: id (string), name (string), type (one of: agentic_browsing, selenese, unit_assertion, agentic_assertion).
-For agentic_browsing: include instruction (string).
-For agentic_assertion: include instruction and criteria (strings).
-For unit_assertion: include assertions array with type, selector, expected.
-Output ONLY the JSON array, no markdown.`;
-
   const userPrompt = context
     ? `Context:\n${context}\n\nRequirements:\n${prompt}`
     : prompt;
 
+  debug("bedrock", `generateTestPlan request model=${MODEL_ID}`, { userPrompt: userPrompt.slice(0, 500) });
+
+  const startTime = Date.now();
   const response = await client.send(
     new InvokeModelCommand({
       modelId: MODEL_ID,
@@ -34,13 +32,16 @@ Output ONLY the JSON array, no markdown.`;
         anthropic_version: "bedrock-2023-05-31",
         max_tokens: 4096,
         messages: [{ role: "user", content: userPrompt }],
-        system: systemPrompt,
+        system: TEST_PLAN_GENERATION,
       }),
     })
   );
 
+  const duration = Date.now() - startTime;
   const result = JSON.parse(new TextDecoder().decode(response.body));
-  return JSON.parse(result.content[0].text) as TestStep[];
+  const parsed = JSON.parse(result.content[0].text) as TestStep[];
+  debug("bedrock", `generateTestPlan response duration=${duration}ms`, { raw: result, parsed });
+  return parsed;
 }
 
 export interface AssertionResult {
@@ -54,15 +55,14 @@ export async function evaluateAssertion(
   criteria: string,
   pageContent: string
 ): Promise<AssertionResult> {
-  const systemPrompt = `You are a QA judge evaluating if a page meets criteria.
-Output JSON: {"passed": boolean, "reasoning": "explanation", "confidence": 0.0-1.0}
-Output ONLY valid JSON, no markdown.`;
-
   const userPrompt = `Instruction: ${instruction}
 Criteria: ${criteria}
 Page content:
 ${pageContent.slice(0, 8000)}`;
 
+  debug("bedrock", `evaluateAssertion request model=${MODEL_ID}`, { instruction, criteria, contentLength: pageContent.length, contentPreview: pageContent.slice(0, 500) });
+
+  const startTime = Date.now();
   const response = await client.send(
     new InvokeModelCommand({
       modelId: MODEL_ID,
@@ -72,11 +72,21 @@ ${pageContent.slice(0, 8000)}`;
         anthropic_version: "bedrock-2023-05-31",
         max_tokens: 1024,
         messages: [{ role: "user", content: userPrompt }],
-        system: systemPrompt,
+        system: ASSERTION_EVALUATION,
       }),
     })
   );
 
+  const duration = Date.now() - startTime;
   const result = JSON.parse(new TextDecoder().decode(response.body));
-  return JSON.parse(result.content[0].text) as AssertionResult;
+  const text = result.content[0].text;
+  
+  // Extract JSON from response, handling cases where LLM adds extra text
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error(`No JSON found in LLM response: ${text.slice(0, 100)}`);
+  }
+  const parsed = JSON.parse(jsonMatch[0]) as AssertionResult;
+  debug("bedrock", `evaluateAssertion response duration=${duration}ms`, { raw: result, parsed });
+  return parsed;
 }

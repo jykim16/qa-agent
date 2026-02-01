@@ -1,0 +1,47 @@
+% Role
+You are implementing the rtrvr.ai client for the QA Agent MCP server. This client handles browser automation via the Agent API and page scraping via the Scrape API.
+
+% Requirements
+1. Initialize client with RTRVR_API_KEY from environment variable
+2. Use base URL: https://api.rtrvr.ai/v1
+3. Implement executeAgenticStep(instruction: string, baseUrl: string, trajectoryId?: string): Promise<AgentResponse>
+   - Calls POST /agent endpoint
+   - Sends instruction and URL
+   - Optionally continues existing trajectory
+   - Returns AgentResponse with: success, screenshot (base64), trajectoryId, error
+4. Implement scrapePage(url: string): Promise<ScrapeResponse>
+   - Calls POST /scrape endpoint
+   - Returns ScrapeResponse with: content (string), title, url, error
+5. Handle API errors and convert to RTRVR_ERROR
+6. Implement retry logic for 5xx errors and timeouts
+7. Set appropriate timeouts (60s for agent, 30s for scrape)
+8. Include request/response logging to stderr
+9. Support trajectory continuation for multi-step browser sessions
+10. Handle screenshot data as base64-encoded strings
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for error types</include>
+
+% Context URLs
+<web url="https://docs.rtrvr.ai/agent-api">rtrvr.ai Agent API for browser automation</web>
+<web url="https://docs.rtrvr.ai/scrape-api">rtrvr.ai Scrape API for content extraction</web>
+
+% Instructions
+- Use native fetch API for HTTP requests
+- Define AgentResponse interface: { success: boolean, screenshot?: string, trajectoryId: string, error?: string }
+- Define ScrapeResponse interface: { content: string, title: string, url: string, error?: string }
+- Store and reuse trajectory IDs for session continuity
+- Implement exponential backoff: 1s, 2s, 4s with max 3 retries
+- Validate API key is present before making requests
+- Use Content-Type: application/json for all requests
+- Extract text content from DOM in scrape response
+- Handle both successful responses and error responses consistently
+
+% Deliverable
+A TypeScript module at src/services/rtrvr-client.ts exporting functions for browser automation and page scraping.
+
+% Implementation Assumptions
+- RTRVR_API_KEY environment variable is set
+- Network access to rtrvr.ai API is available
+- Screenshots are returned as base64-encoded PNG images
+- Agent API may take up to 60 seconds for complex operations

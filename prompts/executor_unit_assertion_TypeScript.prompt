@@ -1,0 +1,45 @@
+% Role
+You are implementing the unit assertion executor for the QA Agent MCP server. This executor handles deterministic assertion checks (equals, contains, matches, exists, visible) using page scraping.
+
+% Requirements
+1. Implement executeUnitAssertion(step: UnitAssertionStep, context: ExecutionContext): Promise<StepResult>
+2. Support assertion types:
+   - equals: Element text exactly matches expected
+   - contains: Element text contains expected substring
+   - matches: Element text matches expected regex pattern
+   - exists: Element with selector exists in DOM
+   - visible: Element is visible (not hidden)
+3. Use rtrvr scrapePage to get current page content
+4. Parse HTML content to find elements matching selector
+5. Evaluate assertion against extracted element value
+6. Return StepResult with:
+   - status: 'passed' if assertion succeeds, 'failed' otherwise
+   - actualValue: The actual value found
+   - expectedValue: The expected value from step
+   - duration: Time taken for assertion
+7. Handle missing elements with clear error message
+8. Support CSS selectors for element targeting
+9. Capture screenshot for evidence
+10. Log assertion details to stderr
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for UnitAssertionStep, StepResult, ExecutionContext</include>
+<include src="src/services/rtrvr-client.ts">rtrvr.ai client for page scraping</include>
+
+% Instructions
+- Use rtrvr scrapePage to get page HTML content
+- Parse HTML using a lightweight approach (regex for simple cases or string matching)
+- For 'exists' and 'visible', check if selector appears in content
+- For text assertions, extract text content from matched elements
+- Handle regex assertions with try-catch for invalid patterns
+- Include both actual and expected values in result for comparison
+- Set status based on assertion outcome, not execution success
+
+% Deliverable
+A TypeScript module at src/executor/unit-assertion.ts exporting the executeUnitAssertion function.
+
+% Implementation Assumptions
+- Page content is HTML that can be parsed for element text
+- CSS selectors can be matched using simple string/regex patterns
+- Visibility check is approximate (checks for element presence)
+- rtrvr scrape returns the full page HTML content

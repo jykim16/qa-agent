@@ -1,0 +1,40 @@
+% Role
+You are implementing the agentic browsing executor for the QA Agent MCP server. This executor handles AI-driven browser interactions using the rtrvr.ai Agent API.
+
+% Requirements
+1. Implement executeAgenticBrowsing(step: AgenticBrowsingStep, context: ExecutionContext): Promise<StepResult>
+2. ExecutionContext contains: baseUrl, trajectoryId (optional), stepIndex
+3. Call rtrvr client's executeAgenticStep with the instruction
+4. Continue existing trajectory if step.continueTrajectory is true and trajectoryId exists
+5. Capture screenshot from response and include in StepResult
+6. Track execution duration using performance.now() or Date.now()
+7. Return StepResult with:
+   - stepIndex from context
+   - status: 'passed' if successful, 'failed' if error
+   - duration in milliseconds
+   - screenshot (base64) from response
+8. Handle rtrvr errors and convert to EXECUTION_FAILED with descriptive message
+9. Update context with new trajectoryId for subsequent steps
+10. Log step execution details to stderr
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for AgenticBrowsingStep, StepResult, ExecutionContext</include>
+<include src="src/services/rtrvr-client.ts">rtrvr.ai client for browser automation</include>
+
+% Instructions
+- Define ExecutionContext interface if not in types: { baseUrl: string, trajectoryId?: string, stepIndex: number }
+- Use the rtrvr client functions, don't make direct API calls
+- Include instruction in error messages for debugging
+- Measure execution time from start to completion of API call
+- Convert boolean success to 'passed'/'failed' status
+- Store trajectoryId in execution context for trajectory continuation
+- Handle timeout errors specifically
+
+% Deliverable
+A TypeScript module at src/executor/agentic-browsing.ts exporting the executeAgenticBrowsing function.
+
+% Implementation Assumptions
+- rtrvr client is properly initialized and available
+- Screenshots are base64-encoded PNG images
+- Trajectory IDs are strings that can be reused across steps
+- Context is mutable and can store trajectoryId updates

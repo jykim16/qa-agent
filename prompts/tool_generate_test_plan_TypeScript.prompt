@@ -1,0 +1,47 @@
+% Role
+You are implementing the generate_test_plan MCP tool for the QA Agent server. This tool exposes test plan generation capabilities via the MCP protocol.
+
+% Requirements
+1. Export generateTestPlanTool(): Tool that returns MCP tool definition
+2. Tool name: "generate_test_plan"
+3. Tool description: "Generate a test plan from natural language requirements"
+4. Define input schema with Zod:
+   - prompt (required): Test requirements in plain English
+   - project (optional): Project identifier for organization
+   - baseUrl (required): Target application URL
+   - repoUrl (optional): GitHub repository URL for context
+   - filePaths (optional): Array of file paths to include as context
+5. Implement tool handler that:
+   - Validates input using Zod schema
+   - Calls generator service's generateTestPlan
+   - Returns formatted success response with plan details
+   - Returns error response on failure
+6. Format response as MCP content array with text type
+7. Handle validation errors with descriptive messages
+8. Handle service errors with error code and message
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for error types</include>
+<include src="src/services/test-plan-generator.ts">Test plan generator service</include>
+
+% Context URLs
+<web url="https://modelcontextprotocol.io/docs/tools/implementing">MCP tool implementation patterns</web>
+<web url="https://github.com/colinhacks/zod">Zod for input validation</web>
+
+% Instructions
+- Follow MCP tool definition pattern: { name, description, inputSchema, handler }
+- Convert Zod schema to JSON Schema for MCP inputSchema
+- Return tool content as array: [{ type: 'text', text: JSON.stringify(result) }]
+- Include planId, stepCount, and creation time in success response
+- Include error code and message in error response
+- Log tool invocation to stderr
+- Use async handler function
+
+% Deliverable
+A TypeScript module at src/tools/generate-test-plan.ts exporting the generateTestPlanTool function.
+
+% Implementation Assumptions
+- MCP SDK provides Tool type definition
+- Tool handlers are async functions
+- Input validation happens before service call
+- Responses are JSON serializable

@@ -1,0 +1,731 @@
+[
+  {
+    "reason": "Type definitions are the foundation for all other modules",
+    "description": "TypeScript type definitions for TestPlan, TestStep (union type with 4 variants), TestRun, StepResult, and error types. Provides compile-time type safety across the entire codebase.",
+    "dependencies": [],
+    "priority": 1,
+    "filename": "types_TypeScript.prompt",
+    "filepath": "src/types/index.ts",
+    "tags": [
+      "types",
+      "core"
+    ],
+    "context_urls": [
+      {
+        "url": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types",
+        "purpose": "TypeScript union types for TestStep variants"
+      },
+      {
+        "url": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions",
+        "purpose": "Discriminated unions for type-safe step handling"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "TestPlan",
+            "signature": "interface TestPlan",
+            "returns": "Type definition"
+          },
+          {
+            "name": "TestStep",
+            "signature": "type TestStep = AgenticBrowsingStep | SelenesesStep | UnitAssertionStep | AgenticAssertionStep",
+            "returns": "Union type"
+          },
+          {
+            "name": "TestRun",
+            "signature": "interface TestRun",
+            "returns": "Type definition"
+          },
+          {
+            "name": "QAAgentError",
+            "signature": "enum QAAgentError",
+            "returns": "Error codes"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Storage service is needed by all tools and executors",
+    "description": "File-based storage service using lowdb for JSON persistence. Handles CRUD operations for test plans and test runs in .qa-agent/ directory. Includes error handling for file operations.",
+    "dependencies": [
+      "types_TypeScript.prompt"
+    ],
+    "priority": 2,
+    "filename": "storage_TypeScript.prompt",
+    "filepath": "src/services/storage.ts",
+    "tags": [
+      "service",
+      "storage"
+    ],
+    "context_urls": [
+      {
+        "url": "https://github.com/typicode/lowdb",
+        "purpose": "lowdb v7 for JSON file storage"
+      },
+      {
+        "url": "https://nodejs.org/api/fs.html#promises-api",
+        "purpose": "Node.js fs/promises for file operations"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "savePlan",
+            "signature": "(plan: TestPlan): Promise<string>",
+            "returns": "Plan ID",
+            "errors": [
+              "STORAGE_ERROR"
+            ]
+          },
+          {
+            "name": "getPlan",
+            "signature": "(planId: string): Promise<TestPlan | null>",
+            "returns": "Plan or null",
+            "errors": [
+              "STORAGE_ERROR"
+            ]
+          },
+          {
+            "name": "listPlans",
+            "signature": "(project?: string): Promise<TestPlanSummary[]>",
+            "returns": "Plan summaries",
+            "errors": [
+              "STORAGE_ERROR"
+            ]
+          },
+          {
+            "name": "saveRun",
+            "signature": "(run: TestRun): Promise<string>",
+            "returns": "Run ID",
+            "errors": [
+              "STORAGE_ERROR"
+            ]
+          },
+          {
+            "name": "getRun",
+            "signature": "(runId: string): Promise<TestRun | null>",
+            "returns": "Run or null",
+            "errors": [
+              "STORAGE_ERROR"
+            ]
+          },
+          {
+            "name": "listRuns",
+            "signature": "(filters?: RunFilters): Promise<TestRunSummary[]>",
+            "returns": "Run summaries",
+            "errors": [
+              "STORAGE_ERROR"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Bedrock client handles all LLM interactions for test generation and assertions",
+    "description": "AWS Bedrock client using Converse API for test plan generation and agentic assertions. Implements streaming for long operations and structured error handling.",
+    "dependencies": [
+      "types_TypeScript.prompt"
+    ],
+    "priority": 2,
+    "filename": "bedrock_client_TypeScript.prompt",
+    "filepath": "src/services/bedrock-client.ts",
+    "tags": [
+      "service",
+      "llm",
+      "bedrock"
+    ],
+    "context_urls": [
+      {
+        "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html",
+        "purpose": "Bedrock Converse API for unified LLM interface"
+      },
+      {
+        "url": "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/bedrock-runtime/",
+        "purpose": "AWS SDK v3 Bedrock Runtime client"
+      },
+      {
+        "url": "https://www.npmjs.com/package/@aws-sdk/client-bedrock-runtime",
+        "purpose": "NPM package for Bedrock Runtime client"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "generateTestPlan",
+            "signature": "(prompt: string, context?: string): Promise<TestStep[]>",
+            "returns": "Test steps array",
+            "errors": [
+              "BEDROCK_ERROR"
+            ]
+          },
+          {
+            "name": "evaluateAssertion",
+            "signature": "(instruction: string, criteria: string, pageContent: string): Promise<AssertionResult>",
+            "returns": "Assertion result with reasoning",
+            "errors": [
+              "BEDROCK_ERROR"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "rtrvr.ai client handles browser automation and page scraping",
+    "description": "rtrvr.ai client for agentic browser automation and page scraping. Manages trajectory IDs for session continuity and implements retry logic for failed operations.",
+    "dependencies": [
+      "types_TypeScript.prompt"
+    ],
+    "priority": 2,
+    "filename": "rtrvr_client_TypeScript.prompt",
+    "filepath": "src/services/rtrvr-client.ts",
+    "tags": [
+      "service",
+      "automation",
+      "rtrvr"
+    ],
+    "context_urls": [
+      {
+        "url": "https://docs.rtrvr.ai/agent-api",
+        "purpose": "rtrvr.ai Agent API for browser automation"
+      },
+      {
+        "url": "https://docs.rtrvr.ai/scrape-api",
+        "purpose": "rtrvr.ai Scrape API for content extraction"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "executeAgenticStep",
+            "signature": "(instruction: string, baseUrl: string, trajectoryId?: string): Promise<AgentResponse>",
+            "returns": "Agent response with screenshot",
+            "errors": [
+              "RTRVR_ERROR"
+            ]
+          },
+          {
+            "name": "scrapePage",
+            "signature": "(url: string): Promise<ScrapeResponse>",
+            "returns": "Page content",
+            "errors": [
+              "RTRVR_ERROR"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "GitHub client fetches repository context for test generation",
+    "description": "GitHub API client for fetching repository information and file contents. Used to provide codebase context during test plan generation.",
+    "dependencies": [
+      "types_TypeScript.prompt"
+    ],
+    "priority": 2,
+    "filename": "github_client_TypeScript.prompt",
+    "filepath": "src/services/github-client.ts",
+    "tags": [
+      "service",
+      "github"
+    ],
+    "context_urls": [
+      {
+        "url": "https://docs.github.com/en/rest",
+        "purpose": "GitHub REST API documentation"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "getRepoInfo",
+            "signature": "(repoUrl: string): Promise<RepoInfo>",
+            "returns": "Repository metadata",
+            "errors": [
+              "GITHUB_ERROR"
+            ]
+          },
+          {
+            "name": "getFileContent",
+            "signature": "(repoUrl: string, path: string): Promise<string>",
+            "returns": "File content",
+            "errors": [
+              "GITHUB_ERROR"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Agentic browsing executor handles AI-driven browser interactions",
+    "description": "Executor for agentic browsing steps using rtrvr.ai Agent API. Manages trajectory continuity across steps and captures screenshots for evidence.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "rtrvr_client_TypeScript.prompt"
+    ],
+    "priority": 3,
+    "filename": "executor_agentic_browsing_TypeScript.prompt",
+    "filepath": "src/executor/agentic-browsing.ts",
+    "tags": [
+      "executor",
+      "browsing"
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "executeAgenticBrowsing",
+            "signature": "(step: AgenticBrowsingStep, context: ExecutionContext): Promise<StepResult>",
+            "returns": "Step result with screenshot",
+            "errors": [
+              "RTRVR_ERROR",
+              "EXECUTION_FAILED"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Selenese executor handles scripted browser commands",
+    "description": "Executor for Selenese steps with deterministic browser commands (click, type, waitForElement, etc.). Provides precise control for repeatable test sequences.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "rtrvr_client_TypeScript.prompt"
+    ],
+    "priority": 3,
+    "filename": "executor_selenese_TypeScript.prompt",
+    "filepath": "src/executor/selenese.ts",
+    "tags": [
+      "executor",
+      "selenese"
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "executeSelenese",
+            "signature": "(step: SelenesesStep, context: ExecutionContext): Promise<StepResult>",
+            "returns": "Step result",
+            "errors": [
+              "RTRVR_ERROR",
+              "EXECUTION_FAILED"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Unit assertion executor handles deterministic checks",
+    "description": "Executor for unit assertion steps with deterministic checks (equals, contains, matches, exists, visible). Uses page scraping to validate assertions.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "rtrvr_client_TypeScript.prompt"
+    ],
+    "priority": 3,
+    "filename": "executor_unit_assertion_TypeScript.prompt",
+    "filepath": "src/executor/unit-assertion.ts",
+    "tags": [
+      "executor",
+      "assertion"
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "executeUnitAssertion",
+            "signature": "(step: UnitAssertionStep, context: ExecutionContext): Promise<StepResult>",
+            "returns": "Step result with actual vs expected",
+            "errors": [
+              "RTRVR_ERROR",
+              "EXECUTION_FAILED"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Agentic assertion executor handles LLM-based validation",
+    "description": "Executor for agentic assertion steps using LLM-as-judge. Scrapes page content and uses Bedrock to evaluate assertions with confidence scoring and reasoning.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "bedrock_client_TypeScript.prompt",
+      "rtrvr_client_TypeScript.prompt"
+    ],
+    "priority": 3,
+    "filename": "executor_agentic_assertion_TypeScript.prompt",
+    "filepath": "src/executor/agentic-assertion.ts",
+    "tags": [
+      "executor",
+      "assertion",
+      "llm"
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "executeAgenticAssertion",
+            "signature": "(step: AgenticAssertionStep, context: ExecutionContext): Promise<StepResult>",
+            "returns": "Step result with LLM reasoning and confidence",
+            "errors": [
+              "BEDROCK_ERROR",
+              "RTRVR_ERROR",
+              "EXECUTION_FAILED"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Test plan generator orchestrates LLM to create structured test plans",
+    "description": "Service that uses Bedrock client and GitHub client to generate structured test plans from plain English requirements. Validates generated steps and stores plans.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "bedrock_client_TypeScript.prompt",
+      "github_client_TypeScript.prompt",
+      "storage_TypeScript.prompt"
+    ],
+    "priority": 4,
+    "filename": "generator_test_plan_TypeScript.prompt",
+    "filepath": "src/services/test-plan-generator.ts",
+    "tags": [
+      "generator",
+      "llm"
+    ],
+    "context_urls": [
+      {
+        "url": "https://github.com/colinhacks/zod",
+        "purpose": "Zod for validating generated test plans"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "generateTestPlan",
+            "signature": "(input: GenerateTestPlanInput): Promise<GenerateTestPlanOutput>",
+            "returns": "Plan ID and metadata",
+            "errors": [
+              "BEDROCK_ERROR",
+              "STORAGE_ERROR",
+              "INVALID_INPUT"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Test executor orchestrates step executors to run test plans",
+    "description": "Orchestrator that executes test plans by dispatching steps to appropriate executors. Implements fail-fast behavior and captures full execution evidence.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "storage_TypeScript.prompt",
+      "executor_agentic_browsing_TypeScript.prompt",
+      "executor_selenese_TypeScript.prompt",
+      "executor_unit_assertion_TypeScript.prompt",
+      "executor_agentic_assertion_TypeScript.prompt"
+    ],
+    "priority": 5,
+    "filename": "executor_test_plan_TypeScript.prompt",
+    "filepath": "src/executor/index.ts",
+    "tags": [
+      "executor",
+      "orchestrator"
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "executeTestPlan",
+            "signature": "(planId: string, baseUrl?: string): Promise<TestRun>",
+            "returns": "Complete test run results",
+            "errors": [
+              "PLAN_NOT_FOUND",
+              "EXECUTION_FAILED",
+              "STORAGE_ERROR"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Generate test plan tool exposes test generation via MCP",
+    "description": "MCP tool handler for generate_test_plan. Validates input with Zod, orchestrates test plan generation, and returns plan metadata.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "generator_test_plan_TypeScript.prompt"
+    ],
+    "priority": 6,
+    "filename": "tool_generate_test_plan_TypeScript.prompt",
+    "filepath": "src/tools/generate-test-plan.ts",
+    "tags": [
+      "tool",
+      "mcp"
+    ],
+    "context_urls": [
+      {
+        "url": "https://modelcontextprotocol.io/docs/tools/implementing",
+        "purpose": "MCP tool implementation patterns"
+      },
+      {
+        "url": "https://github.com/colinhacks/zod",
+        "purpose": "Zod for input validation"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "generateTestPlanTool",
+            "signature": "(): Tool",
+            "returns": "MCP tool definition"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Run test plan tool exposes test execution via MCP",
+    "description": "MCP tool handler for run_test_plan. Validates input, orchestrates test execution, and returns execution summary.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "executor_test_plan_TypeScript.prompt"
+    ],
+    "priority": 6,
+    "filename": "tool_run_test_plan_TypeScript.prompt",
+    "filepath": "src/tools/run-test-plan.ts",
+    "tags": [
+      "tool",
+      "mcp"
+    ],
+    "context_urls": [
+      {
+        "url": "https://modelcontextprotocol.io/docs/tools/implementing",
+        "purpose": "MCP tool implementation patterns"
+      },
+      {
+        "url": "https://github.com/colinhacks/zod",
+        "purpose": "Zod for input validation"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "runTestPlanTool",
+            "signature": "(): Tool",
+            "returns": "MCP tool definition"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "List test plans tool exposes plan querying via MCP",
+    "description": "MCP tool handler for list_test_plans. Queries storage service with optional project filter and returns plan summaries.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "storage_TypeScript.prompt"
+    ],
+    "priority": 6,
+    "filename": "tool_list_test_plans_TypeScript.prompt",
+    "filepath": "src/tools/list-test-plans.ts",
+    "tags": [
+      "tool",
+      "mcp",
+      "query"
+    ],
+    "context_urls": [
+      {
+        "url": "https://modelcontextprotocol.io/docs/tools/implementing",
+        "purpose": "MCP tool implementation patterns"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "listTestPlansTool",
+            "signature": "(): Tool",
+            "returns": "MCP tool definition"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "List test runs tool exposes run querying via MCP",
+    "description": "MCP tool handler for list_test_runs. Queries storage service with optional filters (planId, status) and returns run summaries.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "storage_TypeScript.prompt"
+    ],
+    "priority": 6,
+    "filename": "tool_list_test_runs_TypeScript.prompt",
+    "filepath": "src/tools/list-test-runs.ts",
+    "tags": [
+      "tool",
+      "mcp",
+      "query"
+    ],
+    "context_urls": [
+      {
+        "url": "https://modelcontextprotocol.io/docs/tools/implementing",
+        "purpose": "MCP tool implementation patterns"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "listTestRunsTool",
+            "signature": "(): Tool",
+            "returns": "MCP tool definition"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Get test run tool exposes detailed run results via MCP",
+    "description": "MCP tool handler for get_test_run. Retrieves full test run details including step results, screenshots, and LLM reasoning.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "storage_TypeScript.prompt"
+    ],
+    "priority": 6,
+    "filename": "tool_get_test_run_TypeScript.prompt",
+    "filepath": "src/tools/get-test-run.ts",
+    "tags": [
+      "tool",
+      "mcp",
+      "query"
+    ],
+    "context_urls": [
+      {
+        "url": "https://modelcontextprotocol.io/docs/tools/implementing",
+        "purpose": "MCP tool implementation patterns"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "getTestRunTool",
+            "signature": "(): Tool",
+            "returns": "MCP tool definition"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "Tool registration module wires all tools to MCP server",
+    "description": "Central module that imports all tool definitions and registers them with the MCP server. Provides tool discovery and invocation routing.",
+    "dependencies": [
+      "tool_generate_test_plan_TypeScript.prompt",
+      "tool_run_test_plan_TypeScript.prompt",
+      "tool_list_test_plans_TypeScript.prompt",
+      "tool_list_test_runs_TypeScript.prompt",
+      "tool_get_test_run_TypeScript.prompt"
+    ],
+    "priority": 7,
+    "filename": "tools_index_TypeScript.prompt",
+    "filepath": "src/tools/index.ts",
+    "tags": [
+      "tool",
+      "registry"
+    ],
+    "context_urls": [
+      {
+        "url": "https://modelcontextprotocol.io/docs/tools/implementing",
+        "purpose": "MCP tool registration patterns"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "getAllTools",
+            "signature": "(): Tool[]",
+            "returns": "Array of all MCP tools"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "reason": "MCP server entry point initializes and starts the server",
+    "description": "Main entry point that creates MCP server instance, registers tools, configures stdio transport, and starts the server. Implements proper stderr logging.",
+    "dependencies": [
+      "types_TypeScript.prompt",
+      "tools_index_TypeScript.prompt"
+    ],
+    "priority": 8,
+    "filename": "index_TypeScript.prompt",
+    "filepath": "src/index.ts",
+    "tags": [
+      "mcp",
+      "server",
+      "entry"
+    ],
+    "context_urls": [
+      {
+        "url": "https://modelcontextprotocol.io/docs/tools/creating-servers",
+        "purpose": "MCP server creation guide"
+      },
+      {
+        "url": "https://github.com/modelcontextprotocol/typescript-sdk",
+        "purpose": "MCP TypeScript SDK reference"
+      },
+      {
+        "url": "https://modelcontextprotocol.io/docs/tools/debugging",
+        "purpose": "MCP server debugging with stdio transport"
+      }
+    ],
+    "interface": {
+      "type": "module",
+      "module": {
+        "functions": [
+          {
+            "name": "main",
+            "signature": "(): Promise<void>",
+            "returns": "void",
+            "sideEffects": "Starts MCP server on stdio"
+          }
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,48 @@
+% Role
+You are implementing the get_test_run MCP tool for the QA Agent server. This tool exposes detailed test run retrieval via the MCP protocol.
+
+% Requirements
+1. Export getTestRunTool(): Tool that returns MCP tool definition
+2. Tool name: "get_test_run"
+3. Tool description: "Get detailed results for a specific test run"
+4. Define input schema with Zod:
+   - runId (required): ID of the test run to retrieve
+5. Implement tool handler that:
+   - Validates input using Zod schema
+   - Calls storage service's getRun
+   - Returns complete run details including step results
+   - Returns error response if run not found
+6. Format response with full TestRun data:
+   - id, planId, status, baseUrl
+   - startedAt, completedAt
+   - stepResults array with full details per step:
+     - stepIndex, status, duration
+     - screenshot (base64, if available)
+     - actualValue, expectedValue (for assertions)
+     - llmReasoning, confidence (for agentic assertions)
+7. Handle RUN_NOT_FOUND with appropriate error
+8. Include calculated duration in response
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for TestRun, StepResult, and error types</include>
+<include src="src/services/storage.ts">Storage service for retrieving runs</include>
+
+% Context URLs
+<web url="https://modelcontextprotocol.io/docs/tools/implementing">MCP tool implementation patterns</web>
+
+% Instructions
+- Follow MCP tool definition pattern
+- Return complete step results for detailed analysis
+- Include screenshots in response (may be large)
+- Calculate total duration from timestamps
+- Add summary stats: total steps, passed, failed, skipped
+- Handle null run as RUN_NOT_FOUND error
+
+% Deliverable
+A TypeScript module at src/tools/get-test-run.ts exporting the getTestRunTool function.
+
+% Implementation Assumptions
+- Storage returns complete TestRun or null
+- Screenshots are base64 encoded strings
+- Response may be large due to screenshots
+- LLM reasoning is available for agentic assertions

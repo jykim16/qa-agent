@@ -1,0 +1,46 @@
+% Role
+You are implementing the list_test_plans MCP tool for the QA Agent server. This tool exposes test plan querying capabilities via the MCP protocol.
+
+% Requirements
+1. Export listTestPlansTool(): Tool that returns MCP tool definition
+2. Tool name: "list_test_plans"
+3. Tool description: "List all test plans, optionally filtered by project"
+4. Define input schema with Zod:
+   - project (optional): Filter plans by project identifier
+5. Implement tool handler that:
+   - Validates input using Zod schema
+   - Calls storage service's listPlans
+   - Returns formatted list of plan summaries
+   - Returns error response on failure
+6. Format response as array of plan summaries:
+   - id: Plan identifier
+   - name: Plan name
+   - project: Project identifier (if set)
+   - stepCount: Number of steps in plan
+   - createdAt: Creation timestamp
+7. Handle empty results gracefully (return empty array)
+8. Handle storage errors with error response
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for TestPlanSummary and error types</include>
+<include src="src/services/storage.ts">Storage service for listing plans</include>
+
+% Context URLs
+<web url="https://modelcontextprotocol.io/docs/tools/implementing">MCP tool implementation patterns</web>
+
+% Instructions
+- Follow MCP tool definition pattern
+- Map storage results to response format
+- Sort results by createdAt descending (newest first)
+- Include total count in response
+- Keep response lightweight (summaries only)
+- Log query to stderr
+
+% Deliverable
+A TypeScript module at src/tools/list-test-plans.ts exporting the listTestPlansTool function.
+
+% Implementation Assumptions
+- Storage service returns TestPlanSummary array
+- All input parameters are optional
+- Empty project filter returns all plans
+- Results are JSON serializable

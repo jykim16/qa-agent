@@ -1,3 +1,5 @@
+import { debug } from "../logger.js";
+
 const API_BASE = "https://api.rtrvr.ai";
 
 function getApiKey(): string {
@@ -19,21 +21,30 @@ export async function executeAgenticStep(
   urls: string[],
   trajectoryId?: string
 ): Promise<AgentResponse> {
+  const requestBody = {
+    input: instruction,
+    urls,
+    trajectoryId,
+    response: { verbosity: "final" },
+  };
+  debug("rtrvr", "POST /agent request", requestBody);
+
+  const startTime = Date.now();
   const response = await fetch(`${API_BASE}/agent`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${getApiKey()}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      input: instruction,
-      urls,
-      trajectoryId,
-      response: { verbosity: "final" },
-    }),
+    body: JSON.stringify(requestBody),
   });
 
+  const duration = Date.now() - startTime;
+  debug("rtrvr", `POST /agent response status=${response.status} duration=${duration}ms`);
+
   if (!response.ok) {
+    const errorText = await response.text();
+    debug("rtrvr", "POST /agent error response", errorText);
     return {
       success: false,
       error: `API error: ${response.status}`,
@@ -42,6 +53,7 @@ export async function executeAgenticStep(
   }
 
   const data = await response.json() as any;
+  debug("rtrvr", "POST /agent response body", { full: data });
   return {
     success: data.success,
     result: data.result,
@@ -58,20 +70,30 @@ export interface ScrapeResponse {
 }
 
 export async function scrapePage(url: string): Promise<ScrapeResponse> {
+  const requestBody = { urls: [url] };
+  debug("rtrvr", "POST /scrape request", requestBody);
+
+  const startTime = Date.now();
   const response = await fetch(`${API_BASE}/scrape`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${getApiKey()}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ urls: [url] }),
+    body: JSON.stringify(requestBody),
   });
 
+  const duration = Date.now() - startTime;
+  debug("rtrvr", `POST /scrape response status=${response.status} duration=${duration}ms`);
+
   if (!response.ok) {
+    const errorText = await response.text();
+    debug("rtrvr", "POST /scrape error response", errorText);
     return { success: false, error: `API error: ${response.status}` };
   }
 
   const data = await response.json() as any;
+  debug("rtrvr", "POST /scrape response body", { full: data });
   const tab = data.tabs?.[0];
   return {
     success: data.success,

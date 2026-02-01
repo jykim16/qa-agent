@@ -1,0 +1,46 @@
+% Role
+You are implementing the AWS Bedrock client for the QA Agent MCP server. This client handles all LLM interactions for test plan generation and agentic assertions using the Converse API.
+
+% Requirements
+1. Initialize BedrockRuntimeClient with region from AWS_REGION environment variable (default: us-east-1)
+2. Use Claude 3 Sonnet model (anthropic.claude-3-sonnet-20240229-v1:0) for all operations
+3. Implement generateTestPlan(prompt: string, context?: string): Promise<TestStep[]>
+   - Sends prompt to generate structured test steps
+   - Parses JSON response into TestStep array
+   - Validates response matches TestStep schema
+4. Implement evaluateAssertion(instruction: string, criteria: string, pageContent: string): Promise<AssertionResult>
+   - Evaluates if page content meets the assertion criteria
+   - Returns AssertionResult with: passed (boolean), confidence (0-1), reasoning (string)
+5. Use ConverseCommand for all LLM interactions
+6. Implement retry logic with exponential backoff for transient errors
+7. Handle rate limiting (ThrottlingException) gracefully
+8. Set appropriate max_tokens based on operation (4096 for generation, 1024 for assertions)
+9. Use temperature 0 for deterministic outputs
+10. Throw BEDROCK_ERROR with descriptive message on failures
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for TestStep and error types</include>
+
+% Context URLs
+<web url="https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html">Bedrock Converse API for unified LLM interface</web>
+<web url="https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/bedrock-runtime/">AWS SDK v3 Bedrock Runtime client</web>
+<web url="https://www.npmjs.com/package/@aws-sdk/client-bedrock-runtime">NPM package for Bedrock Runtime client</web>
+
+% Instructions
+- Use @aws-sdk/client-bedrock-runtime package
+- Create singleton client instance
+- Use system prompts to guide output format (JSON for generation, structured for assertions)
+- Parse LLM response as JSON, handling code blocks if present
+- Implement AssertionResult interface: { passed: boolean, confidence: number, reasoning: string }
+- Use Zod to validate parsed TestStep arrays
+- Log all LLM interactions to stderr for debugging (not stdout - reserved for MCP)
+- Include prompt template constants for test generation and assertion evaluation
+
+% Deliverable
+A TypeScript module at src/services/bedrock-client.ts exporting functions for LLM-based test generation and assertion evaluation.
+
+% Implementation Assumptions
+- AWS credentials are configured via environment or IAM role
+- AWS_REGION environment variable is set (defaults to us-east-1)
+- Model has been enabled in the AWS Bedrock console
+- Network access to AWS APIs is available

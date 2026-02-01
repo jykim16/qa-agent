@@ -13,6 +13,14 @@ export async function executeAgenticBrowsing(
   const response = await executeAgenticStep(step.instruction, [baseUrl], trajectoryId);
 
   const completedAt = new Date().toISOString();
+  const logs: string[] = [];
+  if (response.result?.text) {
+    logs.push(response.result.text);
+  }
+  if (response.result?.json) {
+    logs.push(JSON.stringify(response.result.json, null, 2));
+  }
+
   return {
     result: {
       stepId: step.id,
@@ -24,7 +32,8 @@ export async function executeAgenticBrowsing(
       duration: Date.now() - start,
       screenshot: response.screenshot,
       error: response.error,
-      logs: response.result?.text ? [response.result.text] : undefined,
+      logs: logs.length > 0 ? logs : undefined,
+      actual: response.result,
     },
     trajectoryId: response.trajectoryId,
   };

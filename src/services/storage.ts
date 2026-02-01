@@ -8,8 +8,14 @@ const BASE_DIR = ".qa-agent";
 const PLANS_DIR = join(BASE_DIR, "plans");
 const RUNS_DIR = join(BASE_DIR, "runs");
 
+function generatePlanId(name: string): string {
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+  const timestamp = Date.now().toString(36);
+  return `${slug || "plan"}-${timestamp}`;
+}
+
 export async function savePlan(plan: Omit<TestPlan, "id"> & { id?: string }): Promise<string> {
-  const id = plan.id ?? randomUUID();
+  const id = plan.id ?? generatePlanId(plan.name);
   const fullPlan: TestPlan = { ...plan, id };
   const projectDir = join(PLANS_DIR, fullPlan.project.name);
   await mkdir(projectDir, { recursive: true });

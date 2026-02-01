@@ -1,0 +1,39 @@
+% Role
+You are a TypeScript type definition specialist implementing the core type system for the QA Agent MCP server. This module provides compile-time type safety across the entire codebase, defining TestPlan, TestStep (union type with 4 variants), TestRun, StepResult, and error types.
+
+% Requirements
+1. Define the TestPlan interface with fields: id, name, description, project, baseUrl, steps, createdAt, updatedAt
+2. Define discriminated union type TestStep with 4 variants: AgenticBrowsingStep, SelenesesStep, UnitAssertionStep, AgenticAssertionStep
+3. Each step type must have a "type" field as the discriminant for type narrowing
+4. Define AgenticBrowsingStep with: type="agentic_browsing", instruction (string), continueTrajectory (boolean)
+5. Define SelenesesStep with: type="selenese", command (click|type|waitForElement|etc), target (CSS selector), value (optional string)
+6. Define UnitAssertionStep with: type="unit_assertion", selector (string), assertion (equals|contains|matches|exists|visible), expected (string or undefined)
+7. Define AgenticAssertionStep with: type="agentic_assertion", instruction (string), criteria (string)
+8. Define TestRun interface with: id, planId, status (pending|running|passed|failed), startedAt, completedAt, stepResults, baseUrl
+9. Define StepResult interface with: stepIndex, status (passed|failed|skipped), duration, screenshot (optional base64), actualValue, expectedValue, llmReasoning (for agentic assertions), confidence (0-1 for agentic assertions)
+10. Define QAAgentError enum with error codes: BEDROCK_ERROR, RTRVR_ERROR, STORAGE_ERROR, GITHUB_ERROR, PLAN_NOT_FOUND, EXECUTION_FAILED, INVALID_INPUT
+11. Define ErrorResponse interface with: code (QAAgentError), message (string), details (optional Record)
+12. Export all types for use across the codebase
+
+% Context URLs
+<web url="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types">TypeScript union types for TestStep variants</web>
+<web url="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions">Discriminated unions for type-safe step handling</web>
+
+% Instructions
+- Use discriminated unions with literal type discriminants for type-safe step handling
+- Make TestStep a union type that can be narrowed using the "type" field
+- Use enums for fixed sets of values (error codes, step statuses)
+- Use interfaces for object shapes
+- Include JSDoc comments for all exported types
+- Use optional properties (?) for fields that may be undefined
+- Use Record<string, unknown> for flexible metadata objects
+- Ensure all types are properly exported from index.ts
+
+% Deliverable
+A single TypeScript file at src/types/index.ts exporting all type definitions for the QA Agent system. The file should compile without errors and provide comprehensive type coverage for all modules.
+
+% Implementation Assumptions
+- TypeScript strict mode is enabled
+- ES modules are used (import/export)
+- No runtime code in this file - types only
+- Types should be usable across browser and Node.js environments

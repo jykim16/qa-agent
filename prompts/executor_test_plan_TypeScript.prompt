@@ -1,0 +1,50 @@
+% Role
+You are implementing the test plan executor for the QA Agent MCP server. This orchestrator executes test plans by dispatching steps to appropriate executors with fail-fast behavior.
+
+% Requirements
+1. Implement executeTestPlan(planId: string, baseUrl?: string): Promise<TestRun>
+2. Retrieve test plan from storage by planId
+3. Throw PLAN_NOT_FOUND if plan doesn't exist
+4. Create TestRun with status 'running'
+5. Execute each step in sequence using appropriate executor:
+   - agentic_browsing -> executeAgenticBrowsing
+   - selenese -> executeSelenese
+   - unit_assertion -> executeUnitAssertion
+   - agentic_assertion -> executeAgenticAssertion
+6. Maintain ExecutionContext across steps:
+   - Track trajectoryId for browser session continuity
+   - Update stepIndex for each step
+   - Use baseUrl from parameter or plan
+7. Implement fail-fast: stop on first failed step
+8. Collect StepResult for each executed step
+9. Update TestRun status: 'passed' if all pass, 'failed' if any fail
+10. Save completed TestRun to storage
+11. Return complete TestRun with all step results
+12. Handle executor errors with EXECUTION_FAILED
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for TestPlan, TestRun, TestStep, StepResult</include>
+<include src="src/services/storage.ts">Storage service for plans and runs</include>
+<include src="src/executor/agentic-browsing.ts">Executor for agentic browsing steps</include>
+<include src="src/executor/selenese.ts">Executor for Selenese steps</include>
+<include src="src/executor/unit-assertion.ts">Executor for unit assertion steps</include>
+<include src="src/executor/agentic-assertion.ts">Executor for agentic assertion steps</include>
+
+% Instructions
+- Use discriminated union narrowing on step.type to dispatch to correct executor
+- Initialize ExecutionContext at start of execution
+- Update context.trajectoryId after each step that returns one
+- Skip remaining steps after first failure (mark as 'skipped')
+- Calculate total execution time
+- Set completedAt timestamp when done
+- Log progress for each step to stderr
+- Handle missing executors gracefully
+
+% Deliverable
+A TypeScript module at src/executor/index.ts exporting the executeTestPlan function.
+
+% Implementation Assumptions
+- Plan exists in storage before execution
+- Steps are executed sequentially, not in parallel
+- ExecutionContext is shared across all steps in a run
+- Skipped steps have minimal StepResult (status only)

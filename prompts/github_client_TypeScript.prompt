@@ -1,0 +1,49 @@
+% Role
+You are implementing the GitHub API client for the QA Agent MCP server. This client fetches repository information and file contents to provide codebase context during test plan generation.
+
+% Requirements
+1. Initialize client with optional GITHUB_TOKEN from environment variable for higher rate limits
+2. Use GitHub REST API base URL: https://api.github.com
+3. Implement getRepoInfo(repoUrl: string): Promise<RepoInfo>
+   - Parse owner/repo from GitHub URL (supports various URL formats)
+   - Call GET /repos/{owner}/{repo}
+   - Return RepoInfo with: name, description, defaultBranch, language, topics
+4. Implement getFileContent(repoUrl: string, path: string): Promise<string>
+   - Call GET /repos/{owner}/{repo}/contents/{path}
+   - Decode base64 content
+   - Return file content as string
+5. Handle API errors and convert to GITHUB_ERROR
+6. Implement rate limit handling (check X-RateLimit-Remaining header)
+7. Support both public and private repositories (when token provided)
+8. Parse various GitHub URL formats:
+   - https://github.com/owner/repo
+   - https://github.com/owner/repo.git
+   - github.com/owner/repo
+9. Cache repository info for 5 minutes to reduce API calls
+10. Handle 404 errors specifically for missing repos/files
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for error types</include>
+
+% Context URLs
+<web url="https://docs.github.com/en/rest">GitHub REST API documentation</web>
+
+% Instructions
+- Use native fetch API for HTTP requests
+- Define RepoInfo interface: { name: string, description: string, defaultBranch: string, language: string, topics: string[] }
+- Add Authorization header when GITHUB_TOKEN is available
+- Add Accept: application/vnd.github.v3+json header
+- Add User-Agent header (required by GitHub API)
+- Implement simple in-memory cache with TTL
+- Decode file content from base64 (Buffer.from(content, 'base64').toString('utf-8'))
+- Extract owner and repo from URL using regex
+- Log rate limit status to stderr when approaching limits
+
+% Deliverable
+A TypeScript module at src/services/github-client.ts exporting functions for fetching GitHub repository information and file contents.
+
+% Implementation Assumptions
+- GITHUB_TOKEN environment variable is optional but recommended
+- Network access to GitHub API is available
+- Only text files are supported (not binary)
+- Public repositories can be accessed without authentication

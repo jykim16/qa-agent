@@ -1,0 +1,52 @@
+% Role
+You are implementing the test plan generator service for the QA Agent MCP server. This service orchestrates LLM-based test plan generation from plain English requirements.
+
+% Requirements
+1. Implement generateTestPlan(input: GenerateTestPlanInput): Promise<GenerateTestPlanOutput>
+2. GenerateTestPlanInput includes:
+   - prompt: Plain English test description
+   - project: Optional project identifier
+   - baseUrl: Target application URL
+   - repoUrl: Optional GitHub repo for context
+   - filePaths: Optional array of file paths to include as context
+3. If repoUrl provided, fetch repository info and relevant files using GitHub client
+4. Build comprehensive prompt with:
+   - User's test requirements
+   - Repository context (if available)
+   - File contents (if specified)
+   - Output format instructions (JSON array of TestStep)
+5. Call Bedrock client to generate test steps
+6. Validate generated steps against TestStep schema using Zod
+7. Create TestPlan object with generated steps
+8. Save plan using storage service
+9. Return GenerateTestPlanOutput with: planId, name, stepCount, createdAt
+10. Handle validation errors with INVALID_INPUT
+11. Handle LLM errors with BEDROCK_ERROR
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for TestPlan, TestStep, and error types</include>
+<include src="src/services/bedrock-client.ts">Bedrock client for LLM generation</include>
+<include src="src/services/github-client.ts">GitHub client for repository context</include>
+<include src="src/services/storage.ts">Storage service for saving plans</include>
+
+% Context URLs
+<web url="https://github.com/colinhacks/zod">Zod for validating generated test plans</web>
+
+% Instructions
+- Define GenerateTestPlanInput and GenerateTestPlanOutput interfaces
+- Create Zod schemas for TestStep validation
+- Build prompt template with sections for context, requirements, and format
+- Include examples of each step type in the prompt for better LLM output
+- Extract test name from prompt or generate descriptive name
+- Set createdAt and updatedAt timestamps
+- Generate unique plan ID via storage service
+- Log generation progress to stderr
+
+% Deliverable
+A TypeScript module at src/services/test-plan-generator.ts exporting the generateTestPlan function.
+
+% Implementation Assumptions
+- Bedrock client returns valid JSON that may need parsing
+- GitHub context is optional and enhances but doesn't require generation
+- Zod validation rejects invalid step structures
+- Storage service handles ID generation

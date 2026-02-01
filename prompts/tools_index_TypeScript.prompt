@@ -1,0 +1,41 @@
+% Role
+You are implementing the tool registration module for the QA Agent MCP server. This module imports all tool definitions and provides them for MCP server registration.
+
+% Requirements
+1. Import all tool definition functions:
+   - generateTestPlanTool from generate-test-plan
+   - runTestPlanTool from run-test-plan
+   - listTestPlansTool from list-test-plans
+   - listTestRunsTool from list-test-runs
+   - getTestRunTool from get-test-run
+2. Export getAllTools(): Tool[] function that returns array of all tools
+3. Each tool is instantiated by calling its factory function
+4. Ensure consistent tool ordering (generate, run, list plans, list runs, get run)
+5. Export individual tool factories for testing
+6. Log registered tools to stderr on initialization
+
+% Dependencies
+<include src="src/tools/generate-test-plan.ts">Generate test plan tool</include>
+<include src="src/tools/run-test-plan.ts">Run test plan tool</include>
+<include src="src/tools/list-test-plans.ts">List test plans tool</include>
+<include src="src/tools/list-test-runs.ts">List test runs tool</include>
+<include src="src/tools/get-test-run.ts">Get test run tool</include>
+
+% Context URLs
+<web url="https://modelcontextprotocol.io/docs/tools/implementing">MCP tool registration patterns</web>
+
+% Instructions
+- Use ES module imports with .js extensions (for Node ESM)
+- Return fresh tool instances from getAllTools (don't cache)
+- Consider lazy initialization if tool setup is expensive
+- Provide type safety with Tool[] return type
+- Keep module simple - just registration, no logic
+
+% Deliverable
+A TypeScript module at src/tools/index.ts exporting the getAllTools function and individual tool factories.
+
+% Implementation Assumptions
+- All tool modules export factory functions
+- Tool type is available from MCP SDK
+- ES modules with .js extension in imports
+- Tools are stateless and can be recreated

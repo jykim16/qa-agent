@@ -1,0 +1,48 @@
+% Role
+You are implementing the list_test_runs MCP tool for the QA Agent server. This tool exposes test run querying capabilities via the MCP protocol.
+
+% Requirements
+1. Export listTestRunsTool(): Tool that returns MCP tool definition
+2. Tool name: "list_test_runs"
+3. Tool description: "List test runs, optionally filtered by plan or status"
+4. Define input schema with Zod:
+   - planId (optional): Filter runs by plan identifier
+   - status (optional): Filter by status (pending|running|passed|failed)
+5. Implement tool handler that:
+   - Validates input using Zod schema
+   - Calls storage service's listRuns with filters
+   - Returns formatted list of run summaries
+   - Returns error response on failure
+6. Format response as array of run summaries:
+   - id: Run identifier
+   - planId: Associated plan identifier
+   - status: Run status
+   - startedAt: Start timestamp
+   - completedAt: Completion timestamp (if finished)
+   - duration: Execution duration in ms (if completed)
+7. Handle empty results gracefully
+8. Handle storage errors with error response
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for TestRunSummary and error types</include>
+<include src="src/services/storage.ts">Storage service for listing runs</include>
+
+% Context URLs
+<web url="https://modelcontextprotocol.io/docs/tools/implementing">MCP tool implementation patterns</web>
+
+% Instructions
+- Follow MCP tool definition pattern
+- Validate status against allowed values
+- Calculate duration from timestamps if completedAt exists
+- Sort results by startedAt descending (newest first)
+- Include total count in response
+- Keep response lightweight (summaries only)
+
+% Deliverable
+A TypeScript module at src/tools/list-test-runs.ts exporting the listTestRunsTool function.
+
+% Implementation Assumptions
+- Storage service accepts RunFilters parameter
+- Multiple filters can be combined (AND logic)
+- Duration is calculated, not stored
+- Results are JSON serializable

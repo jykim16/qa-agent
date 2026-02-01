@@ -1,0 +1,44 @@
+% Role
+You are implementing the Selenese executor for the QA Agent MCP server. This executor handles deterministic browser commands (click, type, waitForElement, etc.) for repeatable test sequences.
+
+% Requirements
+1. Implement executeSelenese(step: SelenesesStep, context: ExecutionContext): Promise<StepResult>
+2. Support Selenese commands:
+   - click: Click element at target selector
+   - type: Type value into element at target selector
+   - waitForElement: Wait for element to appear (up to 10s)
+   - waitForText: Wait for text content in element
+   - select: Select option from dropdown
+   - check/uncheck: Toggle checkbox
+   - assertElementPresent: Assert element exists
+   - assertText: Assert element has specific text
+3. Convert Selenese commands to rtrvr agentic instructions
+4. Use descriptive instructions for rtrvr agent (e.g., "Click the button with selector '#submit'")
+5. Capture screenshot after each command
+6. Track execution duration
+7. Return StepResult with appropriate status and details
+8. Handle element not found errors with EXECUTION_FAILED
+9. Support CSS selectors in target field
+10. Log command execution to stderr
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for SelenesesStep, StepResult, ExecutionContext</include>
+<include src="src/services/rtrvr-client.ts">rtrvr.ai client for browser automation</include>
+
+% Instructions
+- Create a command-to-instruction mapping for each Selenese command
+- Include selector and value in instructions for clarity
+- Use continueTrajectory=true for commands in the same session
+- Handle assertion commands by checking response for success
+- Set appropriate timeouts per command type
+- Extract actual value from response for comparison
+- Include expectedValue and actualValue in StepResult for assertions
+
+% Deliverable
+A TypeScript module at src/executor/selenese.ts exporting the executeSelenese function.
+
+% Implementation Assumptions
+- Selenese commands are converted to natural language instructions for rtrvr
+- Target field contains valid CSS selectors
+- Value field is the text to type or expected value for assertions
+- rtrvr agent can interpret common Selenese-style instructions

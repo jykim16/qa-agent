@@ -1,0 +1,48 @@
+% Role
+You are implementing the run_test_plan MCP tool for the QA Agent server. This tool exposes test execution capabilities via the MCP protocol.
+
+% Requirements
+1. Export runTestPlanTool(): Tool that returns MCP tool definition
+2. Tool name: "run_test_plan"
+3. Tool description: "Execute a test plan and return results"
+4. Define input schema with Zod:
+   - planId (required): ID of the test plan to execute
+   - baseUrl (optional): Override base URL for execution
+5. Implement tool handler that:
+   - Validates input using Zod schema
+   - Calls executor's executeTestPlan
+   - Returns formatted execution summary
+   - Returns error response on failure
+6. Format response with:
+   - runId: The test run identifier
+   - status: Overall run status (passed/failed)
+   - stepsPassed: Count of passed steps
+   - stepsFailed: Count of failed steps
+   - duration: Total execution time
+7. Handle PLAN_NOT_FOUND error specifically
+8. Handle execution errors with descriptive messages
+
+% Dependencies
+<include src="src/types/index.ts">Type definitions for TestRun and error types</include>
+<include src="src/executor/index.ts">Test plan executor</include>
+
+% Context URLs
+<web url="https://modelcontextprotocol.io/docs/tools/implementing">MCP tool implementation patterns</web>
+<web url="https://github.com/colinhacks/zod">Zod for input validation</web>
+
+% Instructions
+- Follow MCP tool definition pattern
+- Count passed/failed steps from stepResults array
+- Calculate duration from startedAt/completedAt difference
+- Return summary, not full step details (use get_test_run for details)
+- Log execution start/end to stderr
+- Handle timeout scenarios gracefully
+
+% Deliverable
+A TypeScript module at src/tools/run-test-plan.ts exporting the runTestPlanTool function.
+
+% Implementation Assumptions
+- Test plan exists before execution
+- Execution may take significant time (async operation)
+- MCP response is sent after execution completes
+- Duration is in milliseconds

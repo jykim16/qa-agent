@@ -23,13 +23,10 @@ export async function handleRunTestPlan(args: {
     return { error: { code: "PLAN_NOT_FOUND", message: `Plan ${args.planId} not found` } };
   }
 
-  const run = await runTestPlan(plan, args.baseUrl);
+  const { runId } = await runTestPlan(plan, args.baseUrl);
   return {
-    runId: run.id,
-    status: run.status,
-    duration: run.duration,
-    stepsExecuted: run.stepResults.length,
-    stepsPassed: run.stepResults.filter((r) => r.status === "passed").length,
-    failedStep: run.stepResults.find((r) => r.status === "failed")?.stepName,
+    runId,
+    status: "running",
+    message: "Test run started. Use get_test_run to check status.",
   };
 }
